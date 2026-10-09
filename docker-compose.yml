@@ -1,0 +1,74 @@
+name: shorturl
+
+services:
+  app:
+    build:
+      context: .
+      target: app
+    image: shorturl-app:latest
+    container_name: shorturl-app
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage:/var/www/html/storage
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "SCRIPT_NAME=/fpm-ping SCRIPT_FILENAME=/fpm-ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 | grep -q pong"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      target: web
+    image: shorturl-web:latest
+    # Nama ini dipakai sebagai "Forward Hostname" di Nginx Proxy Manager (port 80).
+    container_name: shorturl-web
+    restart: unless-stopped
+    depends_on:
+      - app
+    # Sengaja tanpa "ports:" — hanya dijangkau NPM lewat jaringan "proxy".
+    networks:
+      - internal
+      - proxy
+
+  db:
+    image: mysql:8.4
+    container_name: shorturl-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: Asia/Jakarta
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=128M
+    volumes:
+      - db_data:/var/lib/mysql
+    # Sengaja tanpa "ports:" — port 3306 tidak dibuka ke host maupun internet.
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  internal:
+    internal: true
+  proxy:
+    external: true
+
+volumes:
+  db_data:
+  storage:
