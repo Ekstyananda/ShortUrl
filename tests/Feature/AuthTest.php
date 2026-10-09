@@ -12,8 +12,14 @@ class AuthTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/')->assertRedirect('/login');
         $this->get('/links')->assertRedirect('/login');
+    }
+
+    public function test_guest_sees_landing_page_and_user_is_sent_to_dashboard(): void
+    {
+        $this->get('/')->assertOk()->assertSee('Masuk ke dashboard');
+
+        $this->actingAs(User::factory()->create())->get('/')->assertRedirect(route('links.index'));
     }
 
     public function test_login_page_renders(): void

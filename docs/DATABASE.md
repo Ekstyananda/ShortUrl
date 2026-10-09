@@ -48,4 +48,18 @@ Index: `(short_link_id, clicked_at)`. **Tidak ada kolom IP.**
 
 Index: `(actor_user_id, created_at)`, `created_at`.
 
+## `contact_messages`
+Pesan dari form "Hubungi kami" di landing page.
+
+| Kolom | Tipe | Catatan |
+|---|---|---|
+| id | bigint PK | |
+| name, email | varchar | wajib |
+| phone, organization | varchar null | |
+| message | text | maks. 2000 karakter |
+| read_at | timestamp null | null = belum dibaca |
+| timestamps | | |
+
+Index: `(read_at, created_at)`. Tidak menyimpan IP pengirim.
+
 Tabel bawaan Laravel lain: `sessions`, `cache`, `cache_locks`, `jobs`, `password_reset_tokens`, `migrations`.

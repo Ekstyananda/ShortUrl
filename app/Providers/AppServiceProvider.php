@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($request->ip());
         });
 
+        RateLimiter::for('contact', function (Request $request) {
+            return [Limit::perMinutes(10, 3)->by($request->ip()), Limit::perDay(20)->by($request->ip())];
+        });
+
         RateLimiter::for('redirect', function (Request $request) {
             return Limit::perMinute(config('shortlink.redirect_rate_limit', 120))->by($request->ip());
         });

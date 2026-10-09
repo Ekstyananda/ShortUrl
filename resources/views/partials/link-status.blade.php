@@ -1,7 +1,7 @@
 @if(! $link->is_active)
-    <span class="badge text-bg-secondary">Nonaktif</span>
+    <span class="pill pill-muted">Nonaktif</span>
 @elseif($link->isExpired())
-    <span class="badge text-bg-warning">Kedaluwarsa</span>
+    <span class="pill pill-warning">Kedaluwarsa</span>
 @else
-    <span class="badge text-bg-success">Aktif</span>
+    <span class="pill pill-success">Aktif</span>
 @endif

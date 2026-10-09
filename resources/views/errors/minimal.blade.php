@@ -1,17 +1,20 @@
 <!doctype html>
 <html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @include('partials.head')
     <meta name="robots" content="noindex">
     <title>@yield('code') · {{ config('app.name') }}</title>
-    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}">
 </head>
-<body class="bg-body-tertiary d-flex align-items-center min-vh-100">
-<main class="container text-center py-5">
-    <div class="display-3 fw-bold text-body-secondary">@yield('code')</div>
-    <h1 class="h4 mt-2">@yield('heading')</h1>
-    <p class="text-body-secondary">@yield('message')</p>
+<body class="guest-body">
+<main class="hero min-vh-100 d-flex align-items-center text-center">
+    <div class="hero-grid"></div>
+    <div class="container">
+        <div class="mb-5">@include('partials.brand')</div>
+        <div class="error-code text-gradient">@yield('code')</div>
+        <h1 class="h3 mt-3">@yield('heading')</h1>
+        <p class="text-muted-2 mx-auto" style="max-width: 28rem">@yield('message')</p>
+        <a href="{{ url('/') }}" class="btn btn-primary mt-3"><i class="bi bi-house me-1"></i> Ke beranda</a>
+    </div>
 </main>
 </body>
 </html>

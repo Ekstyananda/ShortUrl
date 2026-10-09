@@ -2,102 +2,107 @@
 
 @section('title', 'Statistik '.$link->alias)
 
+@php($num = fn ($n) => number_format($n, 0, ',', '.'))
+@php($refMax = max(1, (int) $topReferers->max('total')))
+@php($brMax = max(1, (int) $browsers->max('total')))
+
 @section('content')
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('links.index') }}">Link</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('links.show', $link) }}">{{ $link->alias }}</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Statistik</li>
-    </ol>
-</nav>
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('links.index') }}">Link</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('links.show', $link) }}">{{ $link->alias }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Statistik</li>
+</ol></nav>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h4 mb-0">Statistik <code>/{{ $link->alias }}</code></h1>
-    <span class="text-body-secondary small">→ {{ $link->destinationHost() }}</span>
-</div>
-
-<div class="row g-3 mb-3">
-    <div class="col-sm-4">
-        <div class="card shadow-sm h-100"><div class="card-body">
-            <div class="text-body-secondary small">Total klik</div>
-            <div class="fs-3 fw-semibold">{{ number_format($totalClicks) }}</div>
-        </div></div>
+<div class="page-head">
+    <div class="min-w-0">
+        <h1 class="text-break">{{ parse_url(config('app.url'), PHP_URL_HOST) }}/{{ $link->alias }}</h1>
+        <p><i class="bi bi-arrow-return-right me-1"></i>{{ $link->destinationHost() }}</p>
     </div>
-    <div class="col-sm-4">
-        <div class="card shadow-sm h-100"><div class="card-body">
-            <div class="text-body-secondary small">{{ $days }} hari terakhir</div>
-            <div class="fs-3 fw-semibold">{{ number_format($clicksInRange) }}</div>
-        </div></div>
-    </div>
-    <div class="col-sm-4">
-        <div class="card shadow-sm h-100"><div class="card-body">
-            <div class="text-body-secondary small">Hari ini</div>
-            <div class="fs-3 fw-semibold">{{ number_format($clicksToday) }}</div>
-        </div></div>
+    <div class="d-flex gap-2">
+        @include('partials.copy-button', ['text' => $link->shortUrl(), 'copyLabel' => 'Salin'])
+        <a href="{{ route('links.show', $link) }}" class="btn btn-sm btn-ghost">Detail link</a>
     </div>
 </div>
 
-<div class="card shadow-sm mb-3">
-    <div class="card-header bg-body">Klik harian ({{ $days }} hari terakhir)</div>
+<div class="row g-3 mb-4">
+    @foreach([
+        ['Total klik', $totalClicks, 'bi-cursor', 'cyan'],
+        [$days.' hari terakhir', $clicksInRange, 'bi-calendar3', ''],
+        ['Hari ini', $clicksToday, 'bi-lightning-charge', 'amber'],
+    ] as [$label, $value, $icon, $tone])
+        <div class="col-sm-4">
+            <div class="card stat">
+                <div class="stat-label"><span class="stat-icon {{ $tone }}"><i class="bi {{ $icon }}"></i></span> {{ $label }}</div>
+                <div class="stat-value">{{ $num($value) }}</div>
+            </div>
+        </div>
+    @endforeach
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Klik harian</span>
+        <span class="small text-muted-2 fw-normal">{{ $days }} hari terakhir</span>
+    </div>
     <div class="card-body">
-        <div class="chart-box"><canvas id="dailyChart" aria-label="Grafik klik harian" role="img"></canvas></div>
+        <div class="chart-box"><canvas id="dailyChart" aria-label="Grafik klik harian {{ $days }} hari terakhir" role="img"></canvas></div>
     </div>
 </div>
 
-<div class="row g-3 mb-3">
+<div class="row g-4 mb-4">
     <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-body">Referer teratas</div>
-            <ul class="list-group list-group-flush">
-                @forelse($topReferers as $row)
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-break">{{ $row->host !== '' ? $row->host : 'Langsung / tidak diketahui' }}</span>
-                        <span class="fw-semibold">{{ number_format($row->total) }}</span>
-                    </li>
-                @empty
-                    <li class="list-group-item text-body-secondary">Belum ada data.</li>
-                @endforelse
-            </ul>
+        <div class="card h-100">
+            <div class="card-header">Sumber (referer)</div>
+            @forelse($topReferers as $row)
+                <div class="bar-row">
+                    <span class="text-truncate small fw-medium">
+                        @if($row->host !== '')<i class="bi bi-globe2 text-muted-2 me-1"></i>{{ $row->host }}@else<i class="bi bi-box-arrow-in-right text-muted-2 me-1"></i>Langsung / tidak diketahui @endif
+                    </span>
+                    <span class="small fw-semibold">{{ $num($row->total) }}</span>
+                    <div class="bar-track"><div class="bar-fill" style="width: {{ round($row->total / $refMax * 100) }}%"></div></div>
+                </div>
+            @empty
+                <div class="empty-state py-4"><p class="mb-0 small">Belum ada data.</p></div>
+            @endforelse
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-body">Browser</div>
-            <ul class="list-group list-group-flush">
-                @forelse($browsers as $row)
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>{{ $row->family }}</span>
-                        <span class="fw-semibold">{{ number_format($row->total) }}</span>
-                    </li>
-                @empty
-                    <li class="list-group-item text-body-secondary">Belum ada data.</li>
-                @endforelse
-            </ul>
+        <div class="card h-100">
+            <div class="card-header">Browser</div>
+            @forelse($browsers as $row)
+                <div class="bar-row">
+                    <span class="small fw-medium">{{ $row->family }}</span>
+                    <span class="small fw-semibold">{{ $num($row->total) }}</span>
+                    <div class="bar-track"><div class="bar-fill" style="width: {{ round($row->total / $brMax * 100) }}%"></div></div>
+                </div>
+            @empty
+                <div class="empty-state py-4"><p class="mb-0 small">Belum ada data.</p></div>
+            @endforelse
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-body">20 klik terbaru</div>
+<div class="card">
+    <div class="card-header">Klik terbaru</div>
     <div class="table-responsive">
-        <table class="table table-sm mb-0">
-            <thead class="table-light"><tr><th>Waktu</th><th>Referer</th><th>Browser</th></tr></thead>
+        <table class="table table-sm align-middle">
+            <thead><tr><th class="ps-4">Waktu</th><th>Referer</th><th class="pe-4">Browser</th></tr></thead>
             <tbody>
             @forelse($recentClicks as $click)
                 <tr>
-                    <td class="text-nowrap">{{ $click->clicked_at->timezone(config('app.timezone'))->format('d M Y H:i:s') }}</td>
-                    <td>{{ $click->referer_host ?? '—' }}</td>
-                    <td>{{ $click->user_agent_family ?? '—' }}</td>
+                    <td class="ps-4 text-nowrap small">{{ $click->clicked_at->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i:s') }}</td>
+                    <td class="small">{{ $click->referer_host ?? '—' }}</td>
+                    <td class="pe-4 small">{{ $click->user_agent_family ?? '—' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="3" class="text-body-secondary">Belum ada klik.</td></tr>
+                <tr><td colspan="3" class="ps-4 text-muted-2 small">Belum ada klik. Bagikan link Anda untuk mulai mengumpulkan data.</td></tr>
             @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<script type="application/json" id="dailyData">@json(['labels' => $daily->keys()->map(fn ($d) => \Illuminate\Support\Carbon::parse($d)->format('d/m'))->values(), 'values' => $daily->values()])</script>
+<script type="application/json" id="dailyData">@json(['labels' => $daily->keys()->map(fn ($d) => \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M'))->values(), 'values' => $daily->values()])</script>
 @endsection
 
 @push('scripts')
@@ -105,18 +110,43 @@
 <script>
     (function () {
         const data = JSON.parse(document.getElementById('dailyData').textContent);
-        new Chart(document.getElementById('dailyChart'), {
-            type: 'bar',
-            data: {
-                labels: data.labels,
-                datasets: [{ label: 'Klik', data: data.values, backgroundColor: '#0d6efd', borderRadius: 3 }],
-            },
-            options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } },
-            },
-        });
+        const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        const ctx = document.getElementById('dailyChart');
+        let chart;
+
+        function render() {
+            const brandRgb = css('--brand-rgb');
+            const g = ctx.getContext('2d').createLinearGradient(0, 0, 0, 280);
+            g.addColorStop(0, `rgba(${brandRgb}, .35)`);
+            g.addColorStop(1, `rgba(${brandRgb}, 0)`);
+
+            if (chart) chart.destroy();
+            Chart.defaults.font.family = css('--bs-body-font-family');
+            Chart.defaults.color = css('--ink-muted');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Klik', data: data.values, fill: true, backgroundColor: g,
+                        borderColor: css('--brand'), borderWidth: 2.5, tension: .35,
+                        pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: css('--brand'),
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { display: false }, tooltip: { padding: 10, cornerRadius: 8, displayColors: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: css('--line') }, border: { display: false } },
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 }, border: { display: false } },
+                    },
+                },
+            });
+        }
+
+        render();
+        document.addEventListener('themechange', render);
     })();
 </script>
 @endpush

@@ -1,42 +1,63 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
-@section('title', 'Masuk')
+@section('title', 'Masuk · '.config('app.name'))
 
 @section('content')
-<div class="row justify-content-center mt-md-5">
-    <div class="col-sm-10 col-md-6 col-lg-4">
-        <div class="text-center mb-4">
-            <i class="bi bi-link-45deg display-4 text-primary"></i>
-            <h1 class="h4 mt-2">{{ config('app.name') }}</h1>
-            <p class="text-body-secondary small">Masuk dengan akun tim Anda.</p>
-        </div>
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <form method="POST" action="{{ route('login.store') }}" novalidate>
-                    @csrf
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}"
-                               class="form-control @error('email') is-invalid @enderror"
-                               required autofocus autocomplete="username">
-                        @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input id="password" type="password" name="password"
-                               class="form-control @error('password') is-invalid @enderror"
-                               required autocomplete="current-password">
-                        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input class="form-check-input" type="checkbox" name="remember" id="remember">
-                        <label class="form-check-label" for="remember">Ingat saya</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Masuk</button>
-                </form>
+<div class="auth-wrap">
+    <aside class="auth-aside">
+        @include('partials.brand')
+        <div>
+            <blockquote class="mb-4">“Satu tempat untuk semua link tim — rapi dibagikan, jelas hasilnya.”</blockquote>
+            <div class="glass-card d-flex align-items-center gap-3">
+                <span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span>
+                <div>
+                    <div class="small opacity-75">Statistik per link</div>
+                    <div class="fs-5 fw-bold">Pantau setiap klik</div>
+                </div>
             </div>
         </div>
-        <p class="text-center small text-body-secondary mt-3">Belum punya akun? Hubungi admin tim.</p>
+        <div class="small opacity-75">{{ parse_url(config('app.url'), PHP_URL_HOST) }}</div>
+    </aside>
+
+    <div class="auth-form">
+        <div class="inner">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <span class="d-lg-none">@include('partials.brand')</span>
+                <a href="{{ url('/') }}" class="small text-decoration-none text-muted-2 d-none d-lg-inline"><i class="bi bi-arrow-left me-1"></i> Beranda</a>
+                @include('partials.theme-toggle')
+            </div>
+
+            <h1 class="h3 mb-1">Selamat datang kembali</h1>
+            <p class="text-muted-2 mb-4">Masuk dengan akun tim Anda.</p>
+
+            <form method="POST" action="{{ route('login.store') }}" novalidate>
+                @csrf
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}"
+                           class="form-control @error('email') is-invalid @enderror"
+                           placeholder="nama@krayna.id" required autofocus autocomplete="username">
+                    @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group has-validation">
+                        <input id="password" type="password" name="password"
+                               class="form-control @error('password') is-invalid @enderror"
+                               placeholder="••••••••••" required autocomplete="current-password">
+                        <button class="btn btn-ghost js-toggle-password" type="button" data-target="password" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
+                        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+                <div class="mb-4 form-check">
+                    <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                    <label class="form-check-label small" for="remember">Ingat saya di perangkat ini</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Masuk</button>
+            </form>
+
+            <p class="small text-muted-2 mt-4 mb-0"><i class="bi bi-info-circle me-1"></i> Pendaftaran tidak dibuka untuk umum. Hubungi admin tim untuk mendapatkan akun.</p>
+        </div>
     </div>
 </div>
 @endsection

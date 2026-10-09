@@ -6,6 +6,8 @@ Layanan short URL internal tim (mirip Bitly): Laravel 12 + Blade + Bootstrap 5 +
 - Login akun tim (tanpa pendaftaran publik), peran **admin** & **anggota**.
 - Buat short URL dengan alias khusus (`s.krayna.id/modul-sbd`) atau alias acak, edit tujuan, aktif/nonaktif, kedaluwarsa, hapus.
 - Statistik per link: total klik, grafik harian 30 hari, referer (hostname saja), browser, klik terbaru.
+- QR code otomatis per link (unduh SVG atau PNG 1024px).
+- Landing page publik dengan form "Hubungi kami"; pesan masuk dibaca admin di `/admin/messages`.
 - Admin: kelola semua link, kelola akun (buat/ubah/nonaktifkan), lihat audit aktivitas.
 - Keamanan: validasi URL (hanya http/https), alias terlarang, rate limit login & redirect, CSRF, cookie aman, tanpa penyimpanan IP.
 

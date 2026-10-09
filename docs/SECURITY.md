@@ -29,6 +29,7 @@ Tidak menyimpan IP. Referer hanya hostname (query string/token dibuang). User-Ag
 
 ## Rate limit
 - Redirect: 120 request/menit per IP (`SHORTLINK_REDIRECT_RATE_LIMIT`).
+- Form kontak: 3 pesan per 10 menit dan 20 per hari per IP, ditambah honeypot anti-bot. QR code hanya bisa diambil pemilik link/admin.
 - Login: lihat di atas.
 
 ## Audit

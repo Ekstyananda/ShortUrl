@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ShortLinkRequest;
+use App\Models\ClickEvent;
 use App\Models\ShortLink;
 use App\Services\AliasGenerator;
 use App\Services\AuditLogger;
@@ -33,7 +34,15 @@ class ShortLinkController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('links.index', compact('links', 'search'));
+        $visibleIds = ShortLink::query()->visibleTo($user)->select('id');
+        $stats = [
+            'links' => ShortLink::query()->visibleTo($user)->count(),
+            'active' => ShortLink::query()->visibleTo($user)->where('is_active', true)->count(),
+            'clicks' => ClickEvent::whereIn('short_link_id', $visibleIds)->count(),
+            'clicks_7d' => ClickEvent::whereIn('short_link_id', $visibleIds)->where('clicked_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('links.index', compact('links', 'search', 'stats'));
     }
 
     public function create(): View

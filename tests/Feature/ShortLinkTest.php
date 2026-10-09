@@ -85,6 +85,8 @@ class ShortLinkTest extends TestCase
     #[DataProvider('dangerousUrls')]
     public function test_dangerous_or_invalid_destination_is_rejected(string $url): void
     {
+        config(['app.url' => 'https://s.krayna.id']);
+
         $this->actingAs(User::factory()->create())
             ->post('/links', ['destination_url' => $url, 'alias' => 'test-url'])
             ->assertSessionHasErrors('destination_url');
@@ -104,7 +106,7 @@ class ShortLinkTest extends TestCase
             ['example.com'],
             ['not a url'],
             ['https://user:pass@example.com'],
-            ['http://localhost/loop'],
+            ['http://S.KRAYNA.ID/loop'],
         ];
     }
 
@@ -185,6 +187,7 @@ class ShortLinkTest extends TestCase
         $link->clickEvents()->create(['clicked_at' => now(), 'referer_host' => 'google.com', 'user_agent_family' => 'Chrome']);
 
         $this->actingAs($me);
+        $this->get('/links')->assertOk()->assertSee('Total klik');
         $this->get('/links/create')->assertOk();
         $this->get("/links/{$link->id}")->assertOk()->assertSee($link->destinationHost());
         $this->get("/links/{$link->id}/edit")->assertOk();

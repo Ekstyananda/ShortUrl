@@ -1,3 +1,4 @@
-<button type="button" class="btn btn-sm btn-outline-secondary js-copy" data-copy="{{ $text }}" title="Salin" aria-label="Salin {{ $text }}">
-    <i class="bi bi-clipboard"></i>@isset($label) {{ $label }}@endisset
+@php($copyLabel = $copyLabel ?? null)
+<button type="button" class="btn btn-ghost {{ $copyLabel ? 'btn-sm' : 'btn-icon' }} js-copy {{ $copyClass ?? '' }}" data-copy="{{ $text }}" title="Salin link" aria-label="Salin {{ $text }}">
+    <i class="bi bi-clipboard"></i>@if($copyLabel)<span class="ms-1">{{ $copyLabel }}</span>@endif
 </button>
